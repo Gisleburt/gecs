@@ -11,7 +11,6 @@ enum PinState {
 }
 use PinState::{High, Low};
 
-
 /// Map the digital pins of your board to the pins of the display. If the display is face up, the
 /// pins are numbered starting in the bottom left corner at one, going anti clockwise, ending on
 /// pin 10 in the top left corner. Pins 3 and 8 in the middle are connected and are the high pins.
@@ -36,9 +35,9 @@ pub struct LedDisplay5161bs<P: OutputPin> {
     pub pin10: P,
     // Ground
     //
-    // Note: There are two ground pins, 3 and 8. You only need to connect one of them as they are
-    // connected to each other.
-    pub ground: Option<P>,
+    // Note: There are two power (high) pins, 3 and 8. You only need to connect one of them as they
+    // are connected to each other.
+    pub power: Option<P>,
 }
 
 pub struct Digit {
@@ -70,26 +69,206 @@ pub struct Digit {
 //     }
 // }
 
-const CHAR_OFF: Digit = Digit { a: High, b: High, c: High, d: High, e: High, f: High, g: High, dp: High };
-const CHAR_0: Digit = Digit { a: Low, b: Low, c: Low, d: Low, e: Low, f: Low, g: High, dp: High };
-const CHAR_1: Digit = Digit { a: High, b: Low, c: Low, d: High, e: High, f: High, g: High, dp: High };
-const CHAR_2: Digit = Digit { a: Low, b: Low, c: High, d: Low, e: Low, f: High, g: Low, dp: High };
-const CHAR_3: Digit = Digit { a: Low, b: Low, c: Low, d: Low, e: High, f: High, g: Low, dp: High };
-const CHAR_4: Digit = Digit { a: High, b: Low, c: Low, d: High, e: High, f: Low, g: Low, dp: High };
-const CHAR_5: Digit = Digit { a: Low, b: High, c: Low, d: Low, e: High, f: Low, g: Low, dp: High };
-const CHAR_6: Digit = Digit { a: Low, b: High, c: Low, d: Low, e: Low, f: Low, g: Low, dp: High };
-const CHAR_7: Digit = Digit { a: Low, b: Low, c: Low, d: High, e: High, f: High, g: High, dp: High };
-const CHAR_8: Digit = Digit { a: Low, b: Low, c: Low, d: Low, e: Low, f: Low, g: Low, dp: High };
-const CHAR_9: Digit = Digit { a: Low, b: Low, c: Low, d: Low, e: High, f: Low, g: Low, dp: High };
-const CHAR_DP: Digit = Digit { a: High, b: High, c: High, d: High, e: High, f: High, g: High, dp: Low };
-const CHAR_MINUS: Digit = Digit { a: High, b: High, c: High, d: High, e: High, f: High, g: Low, dp: High };
-const CHAR_A: Digit = Digit { a: Low, b: Low, c: Low, d: High, e: Low, f: Low, g: Low, dp: Low };
-const CHAR_B: Digit = Digit { a: Low, b: Low, c: Low, d: Low, e: Low, f: Low, g: Low, dp: Low };
-const CHAR_C: Digit = Digit { a: Low, b: High, c: High, d: Low, e: Low, f: Low, g: High, dp: Low };
-const CHAR_D: Digit = Digit { a: Low, b: Low, c: Low, d: Low, e: Low, f: Low, g: High, dp: Low };
-const CHAR_E: Digit = Digit { a: Low, b: High, c: High, d: Low, e: Low, f: Low, g: Low, dp: Low };
-const CHAR_F: Digit = Digit { a: Low, b: High, c: High, d: High, e: Low, f: Low, g: Low, dp: Low };
-const CHAR_ERROR: Digit = Digit { a: Low, b: Low, c: High, d: Low, e: Low, f: Low, g: Low, dp: Low };
+const CHAR_OFF: Digit = Digit {
+    a: High,
+    b: High,
+    c: High,
+    d: High,
+    e: High,
+    f: High,
+    g: High,
+    dp: High,
+};
+const CHAR_0: Digit = Digit {
+    a: Low,
+    b: Low,
+    c: Low,
+    d: Low,
+    e: Low,
+    f: Low,
+    g: High,
+    dp: High,
+};
+const CHAR_1: Digit = Digit {
+    a: High,
+    b: Low,
+    c: Low,
+    d: High,
+    e: High,
+    f: High,
+    g: High,
+    dp: High,
+};
+const CHAR_2: Digit = Digit {
+    a: Low,
+    b: Low,
+    c: High,
+    d: Low,
+    e: Low,
+    f: High,
+    g: Low,
+    dp: High,
+};
+const CHAR_3: Digit = Digit {
+    a: Low,
+    b: Low,
+    c: Low,
+    d: Low,
+    e: High,
+    f: High,
+    g: Low,
+    dp: High,
+};
+const CHAR_4: Digit = Digit {
+    a: High,
+    b: Low,
+    c: Low,
+    d: High,
+    e: High,
+    f: Low,
+    g: Low,
+    dp: High,
+};
+const CHAR_5: Digit = Digit {
+    a: Low,
+    b: High,
+    c: Low,
+    d: Low,
+    e: High,
+    f: Low,
+    g: Low,
+    dp: High,
+};
+const CHAR_6: Digit = Digit {
+    a: Low,
+    b: High,
+    c: Low,
+    d: Low,
+    e: Low,
+    f: Low,
+    g: Low,
+    dp: High,
+};
+const CHAR_7: Digit = Digit {
+    a: Low,
+    b: Low,
+    c: Low,
+    d: High,
+    e: High,
+    f: High,
+    g: High,
+    dp: High,
+};
+const CHAR_8: Digit = Digit {
+    a: Low,
+    b: Low,
+    c: Low,
+    d: Low,
+    e: Low,
+    f: Low,
+    g: Low,
+    dp: High,
+};
+const CHAR_9: Digit = Digit {
+    a: Low,
+    b: Low,
+    c: Low,
+    d: Low,
+    e: High,
+    f: Low,
+    g: Low,
+    dp: High,
+};
+const CHAR_DP: Digit = Digit {
+    a: High,
+    b: High,
+    c: High,
+    d: High,
+    e: High,
+    f: High,
+    g: High,
+    dp: Low,
+};
+const CHAR_MINUS: Digit = Digit {
+    a: High,
+    b: High,
+    c: High,
+    d: High,
+    e: High,
+    f: High,
+    g: Low,
+    dp: High,
+};
+const CHAR_A: Digit = Digit {
+    a: Low,
+    b: Low,
+    c: Low,
+    d: High,
+    e: Low,
+    f: Low,
+    g: Low,
+    dp: Low,
+};
+const CHAR_B: Digit = Digit {
+    a: Low,
+    b: Low,
+    c: Low,
+    d: Low,
+    e: Low,
+    f: Low,
+    g: Low,
+    dp: Low,
+};
+const CHAR_C: Digit = Digit {
+    a: Low,
+    b: High,
+    c: High,
+    d: Low,
+    e: Low,
+    f: Low,
+    g: High,
+    dp: Low,
+};
+const CHAR_D: Digit = Digit {
+    a: Low,
+    b: Low,
+    c: Low,
+    d: Low,
+    e: Low,
+    f: Low,
+    g: High,
+    dp: Low,
+};
+const CHAR_E: Digit = Digit {
+    a: Low,
+    b: High,
+    c: High,
+    d: Low,
+    e: Low,
+    f: Low,
+    g: Low,
+    dp: Low,
+};
+const CHAR_F: Digit = Digit {
+    a: Low,
+    b: High,
+    c: High,
+    d: High,
+    e: Low,
+    f: Low,
+    g: Low,
+    dp: Low,
+};
+const CHAR_ERROR: Digit = Digit {
+    a: Low,
+    b: Low,
+    c: High,
+    d: Low,
+    e: Low,
+    f: Low,
+    g: Low,
+    dp: Low,
+};
 
 impl From<&char> for Digit {
     fn from(c: &char) -> Self {
@@ -137,8 +316,8 @@ impl<P: OutputPin> LedDisplay5161bs<P> {
 
     pub fn display_digit(&mut self, c: Digit) -> Result<(), P::Error> {
         // Ground
-        if let Some(ground) = self.ground.as_mut() {
-            ground.set_low()?
+        if let Some(power) = self.power.as_mut() {
+            power.set_high()?
         }
         // E
         LedDisplay5161bs::<P>::set_state(&mut self.pin1, c.e)?;
