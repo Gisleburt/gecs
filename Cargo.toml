@@ -1,5 +1,5 @@
 [package]
-name = "led-display-5161bs"
+name = "gecs"
 version = "0.1.0"
 authors = ["Daniel Mason <daniel@danielmason.com>"]
 edition = "2018"
@@ -9,3 +9,8 @@ license = "mit"
 
 [dependencies]
 embedded-hal = "0.2.3"
+
+[features]
+5161bs = ["pin-state", "seven-segment-dp"]
+seven-segment-dp = ["pin-state"]
+pin-state = []

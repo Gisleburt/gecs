@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "led-display-5161bs"
+name = "gecs"
 version = "0.1.0"
 dependencies = [
  "embedded-hal",
